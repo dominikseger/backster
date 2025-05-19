@@ -1,6 +1,23 @@
 # Backster - MySQL S3 Backup Script
 
-A secure, robust, and feature-rich shell script for backing up MariaDB/MySQL databases to S3-compatible storage with encryption, compression, extensive error handling, and Slack notifications.
+## Credits
+
+This project stands on the shoulders of giants. A heartfelt thank you to [Tobias Hannaske](https://github.com/thannaske) for his excellent [k8s-mysql-backup](https://github.com/thannaske/k8s-mysql-backup) project, which provided the initial inspiration and foundation for Backster.
+
+## Table of Contents
+- [Features](#features)
+- [Security First](#security-first)
+- [Requirements](#requirements)
+- [Environment Variables](#environment-variables)
+- [Usage](#usage)
+- [Docker Integration](#docker-integration)
+- [Storage Solutions](#storage-solutions)
+- [Managing Backup Retention](#managing-backup-retention)
+- [Scheduling Backups](#scheduling-backups)
+- [Restore Process](#restore-process)
+- [Credits](#credits)
+- [License](#license)
+- [Contributing](#contributing)
 
 ## Features
 
@@ -8,7 +25,7 @@ A secure, robust, and feature-rich shell script for backing up MariaDB/MySQL dat
 - **Comprehensive Error Handling**: Detailed error capture and reporting
 - **Encryption Support**: Optional age-based encryption for sensitive data
 - **Compression**: Reduces storage costs and transfer times
-- **S3 Compatibility**: Works with any S3-compatible storage (AWS S3, MinIO, DigitalOcean Spaces, etc.)
+- **S3 Compatibility**: Works with any [S3-compatible storage](#storage-solutions)
 - **Slack Notifications**: Real-time backup status alerts with detailed reports
 - **Progress Monitoring**: Visual progress bar for large databases when `pv` is installed
 - **Backup Verification**: Multi-stage verification to ensure backup integrity
@@ -67,19 +84,19 @@ A secure, robust, and feature-rich shell script for backing up MariaDB/MySQL dat
 # Basic usage
 DB_NAME=my_database DB_HOST=localhost DB_USERNAME=root DB_PASSWORD=secret \
 S3_HOST=s3.amazonaws.com S3_ACCESS_KEY=key S3_SECRET_KEY=secret S3_BUCKET=my-bucket \
-./mariadb-s3-backup.sh
+./backster.sh
 
 # With compression and Slack notifications
 DB_NAME=my_database DB_HOST=localhost DB_USERNAME=root DB_PASSWORD=secret \
 S3_HOST=s3.amazonaws.com S3_ACCESS_KEY=key S3_SECRET_KEY=secret S3_BUCKET=my-bucket \
 COMPRESSION=gzip SLACK_ENABLED=true SLACK_WEBHOOK_URL=https://hooks.slack.com/... \
-./mariadb-s3-backup.sh
+./backster.sh
 
 # With encryption
 DB_NAME=my_database DB_HOST=localhost DB_USERNAME=root DB_PASSWORD=secret \
 S3_HOST=s3.amazonaws.com S3_ACCESS_KEY=key S3_SECRET_KEY=secret S3_BUCKET=my-bucket \
 COMPRESSION=gzip ENCRYPTION=age ENCRYPTION_KEY=age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p \
-./mariadb-s3-backup.sh
+./backster.sh
 ```
 
 ## Docker Integration
@@ -91,7 +108,7 @@ services:
   backup:
     image: alpine:latest
     volumes:
-      - ./mariadb-s3-backup.sh:/backup.sh
+      - ./backster.sh:/backup.sh
     environment:
       - DB_NAME=strapi
       - DB_HOST=mariadb
@@ -108,9 +125,52 @@ services:
     command: -c "apk add --no-cache mysql-client bash curl gzip s3cmd && /backup.sh"
 ```
 
+## Storage Solutions
+
+Backster works with any S3-compatible storage service. Here are some popular options, their configuration details, and free tier offerings:
+
+| Provider | S3_HOST | Features | Free Tier |
+|----------|---------|----------|-----------|
+| AWS S3 | `s3.amazonaws.com` | Full S3 API, global availability, lifecycle policies | 5GB storage for 12 months |
+| Backblaze B2 | `s3.us-west-002.backblazeb2.com` | Low cost ($5/TB), free egress with CDN | 10GB storage, free downloads with Cloudflare |
+| Google Cloud Storage | `storage.googleapis.com` | Global availability, strong consistency | 5GB storage per month |
+| Microsoft Azure Blob Storage | `*.blob.core.windows.net` | Global availability, tiered storage | 5GB storage for 12 months |
+| Cloudflare R2 | `*.r2.cloudflarestorage.com` | Zero egress fees, global distribution | 10GB storage, 1M class A ops/month |
+| DigitalOcean Spaces | `*.digitaloceanspaces.com` | Simple pricing, integrated with DO | No free tier, starts at $5/month |
+| MinIO | Custom (self-hosted) | Self-hosted, full S3 compatibility | Free to self-host, no storage limits |
+| Wasabi | `s3.wasabisys.com` | Low cost, no egress fees | No free tier, $5.99/TB/month |
+| Scaleway Object Storage | `s3.fr-par.scw.cloud` | European data centers, GDPR compliance | 75GB free (Object Storage for three months) |
+| Linode Object Storage | `*.linodeobjects.com` | Simple pricing, multiple regions | No free tier, $5/month for 250GB |
+
+### Example Configurations
+
+#### AWS S3
+```bash
+S3_HOST=s3.amazonaws.com
+S3_ACCESS_KEY=your_access_key
+S3_SECRET_KEY=your_secret_key
+S3_BUCKET=your-bucket-name
+```
+
+#### Backblaze B2
+```bash
+S3_HOST=s3.us-west-002.backblazeb2.com
+S3_ACCESS_KEY=your_b2_application_key_id
+S3_SECRET_KEY=your_b2_application_key
+S3_BUCKET=your-bucket-name
+```
+
+#### Cloudflare R2
+```bash
+S3_HOST=<account_id>.r2.cloudflarestorage.com
+S3_ACCESS_KEY=your_r2_access_key_id
+S3_SECRET_KEY=your_r2_secret_key
+S3_BUCKET=your-bucket-name
+```
+
 ## Managing Backup Retention
 
-Rather than embedding retention policies in the script (which would require delete permissions), this script is designed to work with S3 lifecycle policies. This allows for more flexible retention strategies and follows the principle of least privilege by not requiring delete permissions for the backup process.
+Rather than embedding retention policies in the script (which would require delete permissions), Backster is designed to work with S3 lifecycle policies. This allows for more flexible retention strategies and follows the principle of least privilege by not requiring delete permissions for the backup process.
 
 ### Setting Up an S3 Lifecycle Policy
 
@@ -160,7 +220,7 @@ aws s3api put-bucket-lifecycle-configuration --bucket your-bucket-name --lifecyc
 
 ```bash
 # Run backup daily at 3 AM
-0 3 * * * /path/to/mariadb-s3-backup.sh > /var/log/backups/backup-$(date +\%Y\%m\%d).log 2>&1
+0 3 * * * /path/to/backster.sh > /var/log/backups/backup-$(date +\%Y\%m\%d).log 2>&1
 ```
 
 ### Using Docker Scheduled Container:
@@ -172,7 +232,7 @@ services:
   scheduled-backup:
     image: alpine:latest
     volumes:
-      - ./mariadb-s3-backup.sh:/backup.sh
+      - ./backster.sh:/backup.sh
     environment:
       # ... your environment variables ...
     entrypoint: /bin/sh
@@ -190,3 +250,4 @@ gunzip -c backup_file.sql.gz | mysql -h hostname -u username -p database_name
 # For encrypted backups
 age --decrypt -i key.txt backup_file.sql.gz.age | gunzip | mysql -h hostname -u username -p database_name
 ```
+
