@@ -1,6 +1,4 @@
-# Backster
-
-# MySQL S3 Backup Script
+# Backster - MySQL S3 Backup Script
 
 A secure, robust, and feature-rich shell script for backing up MariaDB/MySQL databases to S3-compatible storage with encryption, compression, extensive error handling, and Slack notifications.
 
