@@ -15,7 +15,7 @@
 
 ## Credits
 
-This project stands on the shoulders of giants. A heartfelt thank you to [Tobias Hannaske](https://github.com/thannaske) for his excellent [k8s-mysql-backup](https://github.com/thannaske/k8s-mysql-backup) project, which provided the initial inspiration and foundation for Backster.
+A heartfelt thank you to [Tobias Hannaske](https://github.com/thannaske) for his excellent [k8s-mysql-backup](https://github.com/thannaske/k8s-mysql-backup) project, which provided the initial inspiration and foundation for Backster.
 
 ## Features
 
