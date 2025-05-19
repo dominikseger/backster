@@ -1,10 +1,7 @@
 # Backster - MySQL S3 Backup Script
 
-## Credits
-
-This project stands on the shoulders of giants. A heartfelt thank you to [Tobias Hannaske](https://github.com/thannaske) for his excellent [k8s-mysql-backup](https://github.com/thannaske/k8s-mysql-backup) project, which provided the initial inspiration and foundation for Backster.
-
 ## Table of Contents
+- [Credits](#credits)
 - [Features](#features)
 - [Security First](#security-first)
 - [Requirements](#requirements)
@@ -15,9 +12,10 @@ This project stands on the shoulders of giants. A heartfelt thank you to [Tobias
 - [Managing Backup Retention](#managing-backup-retention)
 - [Scheduling Backups](#scheduling-backups)
 - [Restore Process](#restore-process)
-- [Credits](#credits)
-- [License](#license)
-- [Contributing](#contributing)
+
+## Credits
+
+This project stands on the shoulders of giants. A heartfelt thank you to [Tobias Hannaske](https://github.com/thannaske) for his excellent [k8s-mysql-backup](https://github.com/thannaske/k8s-mysql-backup) project, which provided the initial inspiration and foundation for Backster.
 
 ## Features
 
