@@ -308,9 +308,6 @@ if ! s3cmd -c $TEMP_DIR/.s3cfg ls "$S3_FULL_PATH" >/dev/null; then
   exit 1
 fi
 
-# Note: Rotation policy has been removed as requested
-# Backup lifecycle will be managed by S3 bucket lifecycle policies instead
-
 # Calculate total duration
 end_time=$(date +%s)
 duration=$((end_time - start_time))
